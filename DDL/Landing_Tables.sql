@@ -18,3 +18,11 @@ CREATE TRANSIENT TABLE IF NOT EXISTS SKYPOINTS_DEV.LANDING_STAGE.LANDING_MEMBERS
     source_file_row_number  NUMBER,    -- used for latest-wins ordering
     loaded_at               TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
+---
+-- CREATING A REDEMPTION TABLE TO UNLOAD THE SEMI-STRUCTURE DATA
+CREATE TRANSIENT TABLE IF NOT EXISTS LANDING_REDEMPTIONS(
+    payload                 VARIANT,
+    source_file_name        VARCHAR,   -- audit and reprocessing
+    source_file_row_number  NUMBER,    -- used for latest-wins ordering
+    loaded_at               TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
