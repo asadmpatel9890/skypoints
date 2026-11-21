@@ -26,3 +26,6 @@ CREATE TRANSIENT TABLE IF NOT EXISTS LANDING_REDEMPTIONS(
     source_file_row_number  NUMBER,    -- used for latest-wins ordering
     loaded_at               TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
+
+
+select * from landing_members;
