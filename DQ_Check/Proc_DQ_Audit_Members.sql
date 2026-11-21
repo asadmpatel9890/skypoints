@@ -6,23 +6,38 @@ LANGUAGE SQL
 AS
 $$
 BEGIN
+  LET v_file  VARCHAR := SPLIT_PART(:P_FILE_NAME, '/', -1);   -- keep only the bare file name
   LET v_start TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
 
-  -- Not null, unique, accepted values (scoped to this file)
+  -- 1. Has this file already been audited?
+  LET already NUMBER := (
+      SELECT COUNT(*) FROM SKYPOINTS_DEV.LANDING_STAGE.DQ_AUDIT
+      WHERE table_name = 'LANDING_MEMBERS' AND source_file_name = :v_file);
+  IF (already > 0) THEN
+    RETURN 'SKIPPED: ' || v_file || ' was already audited (' || already::STRING || ' result rows). No checks run.';
+  END IF;
+
+  -- 2. Is the file actually loaded? (don't log an audit for a file that isn't there yet)
+  LET loaded NUMBER := (
+      SELECT COUNT(*) FROM SKYPOINTS_DEV.LANDING_STAGE.LANDING_MEMBERS
+      WHERE ENDSWITH(source_file_name, :v_file));
+  IF (loaded = 0) THEN
+    RETURN 'NOT RUN: no rows for ' || v_file || ' in LANDING_MEMBERS. Load the file first.';
+  END IF;
+
+  -- 3. Run all tests and log them in ONE insert, so a file is never half-audited
   INSERT INTO SKYPOINTS_DEV.LANDING_STAGE.DQ_AUDIT
-         (table_name, source_file_name, test_type, column_name, status, failed_count, total_count)
+         (table_name, source_file_name, test_type, column_name, status, failed_count, total_count, details)
   WITH f AS (SELECT * FROM SKYPOINTS_DEV.LANDING_STAGE.LANDING_MEMBERS
-             WHERE ENDSWITH(source_file_name, :P_FILE_NAME)),
+             WHERE ENDSWITH(source_file_name, :v_file)),
        d AS (SELECT * FROM f WHERE record_type = 'D'),
   t AS (
-      -- NOT NULL
       SELECT 'NOT_NULL' AS test_type, 'member_id' AS col,
              COUNT_IF(NULLIF(TRIM(member_id), '') IS NULL) AS failed, COUNT(*) AS total FROM d
       UNION ALL
       SELECT 'NOT_NULL', 'member_name',     COUNT_IF(NULLIF(TRIM(member_name), '') IS NULL),     COUNT(*) FROM d
       UNION ALL
       SELECT 'NOT_NULL', 'enrollment_date', COUNT_IF(NULLIF(TRIM(enrollment_date), '') IS NULL), COUNT(*) FROM d
-      -- UNIQUE: number of member_ids that appear more than once
       UNION ALL
       SELECT 'UNIQUE', 'member_id',
              (SELECT COUNT(*) FROM (SELECT member_id FROM d
@@ -30,7 +45,6 @@ BEGIN
                                     GROUP BY member_id HAVING COUNT(*) > 1)),
              COUNT_IF(NULLIF(TRIM(member_id), '') IS NOT NULL)
       FROM d
-      -- ACCEPTED VALUES (nulls are left to the NOT NULL test)
       UNION ALL
       SELECT 'ACCEPTED_VALUES', 'record_type',
              COUNT_IF(record_type IS NOT NULL AND UPPER(TRIM(record_type)) NOT IN ('H','D')), COUNT(*) FROM f
@@ -41,30 +55,24 @@ BEGIN
       SELECT 'ACCEPTED_VALUES', 'tier_code',
              COUNT_IF(tier_code IS NOT NULL AND UPPER(TRIM(tier_code)) NOT IN ('GLD','SLV','PLT')), COUNT(*) FROM d
   )
-  SELECT 'LANDING_MEMBERS', :P_FILE_NAME, test_type, col,
-         IFF(failed = 0, 'PASS', 'FAIL'), failed, total
-  FROM t;
-
+  SELECT 'LANDING_MEMBERS', :v_file, test_type, col,
+         IFF(failed = 0, 'PASS', 'FAIL'), failed, total, NULL
+  FROM t
+  UNION ALL
   -- Freshness: was anything loaded into the table in the last 24 hours?
-  INSERT INTO SKYPOINTS_DEV.LANDING_STAGE.DQ_AUDIT
-         (table_name, source_file_name, test_type, column_name, status, failed_count, total_count, details)
-  SELECT 'LANDING_MEMBERS', NULL, 'FRESHNESS', 'loaded_at',
+  SELECT 'LANDING_MEMBERS', :v_file, 'FRESHNESS', 'loaded_at',
          IFF(hrs IS NULL OR hrs > 24, 'FAIL', 'PASS'),
          IFF(hrs IS NULL OR hrs > 24, 1, 0), 1,
          'hours since last load: ' || COALESCE(hrs::STRING, 'never loaded') || ' (limit 24)'
   FROM (SELECT DATEDIFF('hour', MAX(loaded_at), CURRENT_TIMESTAMP()::TIMESTAMP_NTZ) AS hrs
         FROM SKYPOINTS_DEV.LANDING_STAGE.LANDING_MEMBERS);
 
-  -- Summary for this run
+  -- 4. Summary
   LET failed_tests NUMBER := (
       SELECT COUNT(*) FROM SKYPOINTS_DEV.LANDING_STAGE.DQ_AUDIT
-      WHERE table_name = 'LANDING_MEMBERS'
-        AND (source_file_name = :P_FILE_NAME OR source_file_name IS NULL)
-        AND run_ts >= :v_start
-        AND status = 'FAIL');
+      WHERE table_name = 'LANDING_MEMBERS' AND source_file_name = :v_file
+        AND run_ts >= :v_start AND status = 'FAIL');
 
-  RETURN 'Members DQ done for ' || :P_FILE_NAME || '. Failed tests: ' || failed_tests::STRING;
+  RETURN 'Members DQ done for ' || v_file || '. Failed tests: ' || failed_tests::STRING;
 END;
 $$;
-
-CALL('SkyPoints_Members_20121013.txt');
