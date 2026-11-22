@@ -14,6 +14,7 @@ Create or replace table INT_MEMBERS_DERIVED(
     STALE_MEMBERS CHAR(1),
 	FLAG VARCHAR(1),
     CURR_DATE DATE,
+    FILE_DATE DATE,
 	constraint PK_MEMBER_INTERMEDIATE primary key (MEM_ID)
 
 );
@@ -32,7 +33,8 @@ select
     datediff('YEAR',dob,current_date()) as age,
     case when DATEDIFF('DAY',FLIGHT_DT,current_date()) > 90 THEN 'Y' else 'N' end as stale_flag,
     FLAG,
-    CURRENT_DATE()
+    CURRENT_DATE(),
+    FILE_DATE
 from INT_MEMBERS;
 
 SELECT * FROM INT_MEMBERS_DERIVED;

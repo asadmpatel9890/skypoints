@@ -12,6 +12,7 @@ CREATE OR REPLACE TABLE INT_MEMBERS (
     COUNTRY         VARCHAR(5),
     DOB             DATE,
     FLAG            CHAR,
+    file_date       DATE          NOT NULL,
              
     CONSTRAINT PK_MEMBER_INTERMEDIATE PRIMARY KEY (MEM_ID)  -- informational only in Snowflake
 );
