@@ -13,7 +13,8 @@ CREATE OR REPLACE TABLE INT_MEMBERS (
     DOB             DATE,
     FLAG            CHAR,
              
-    CONSTRAINT PK_MEMBER_INTERMEDIATE PRIMARY KEY (MEMBER_ID)  -- informational only in Snowflake
+    CONSTRAINT PK_MEMBER_INTERMEDIATE PRIMARY KEY (MEM_ID)  -- informational only in Snowflake
 );
 
 
+select * from int_members;
