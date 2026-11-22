@@ -2,19 +2,17 @@
 USE schema SKYPOINTS_DEV.TRANSFORMATION_STAGE;
 
 CREATE OR REPLACE TABLE INT_MEMBERS (
-    MEMBER_NAME        VARCHAR(255)  NOT NULL,
-    MEMBER_ID          VARCHAR(18)   NOT NULL,
-    ENROLLMENT_DATE    DATE          NOT NULL,
-    LAST_FLIGHT_DATE   DATE,
-    TIER_CODE          VARCHAR(5),
-    AGENT_NAME         VARCHAR(255),
-    STATE_CODE         VARCHAR(5),
-    COUNTRY_CODE       VARCHAR(5),
-    DATE_OF_BIRTH      DATE,
-    IS_ACTIVE          BOOLEAN,
-    AGE                NUMBER(3,0),
-    STALE_MEMBER       BOOLEAN,
-    AS_OF_DATE         DATE          NOT NULL,
+    NAME            VARCHAR(255)  NOT NULL,
+    MEM_ID          VARCHAR(18)   NOT NULL,
+    ENROLL_DT       DATE          NOT NULL,
+    FLIGHT_DT       DATE,
+    TIER            VARCHAR(5),
+    AGENT_NAME      VARCHAR(255),
+    STATE           VARCHAR(5),
+    COUNTRY         VARCHAR(5),
+    DOB             DATE,
+    FLAG            CHAR,
+             
     CONSTRAINT PK_MEMBER_INTERMEDIATE PRIMARY KEY (MEMBER_ID)  -- informational only in Snowflake
 );
 
