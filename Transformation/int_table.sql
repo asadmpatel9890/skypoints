@@ -10,7 +10,6 @@ CREATE OR REPLACE TABLE INT_MEMBERS (
     AGENT_NAME         VARCHAR(255),
     STATE_CODE         VARCHAR(5),
     COUNTRY_CODE       VARCHAR(5),
-    POST_CODE          VARCHAR(10),
     DATE_OF_BIRTH      DATE,
     IS_ACTIVE          BOOLEAN,
     AGE                NUMBER(3,0),
@@ -18,4 +17,5 @@ CREATE OR REPLACE TABLE INT_MEMBERS (
     AS_OF_DATE         DATE          NOT NULL,
     CONSTRAINT PK_MEMBER_INTERMEDIATE PRIMARY KEY (MEMBER_ID)  -- informational only in Snowflake
 );
+
 
