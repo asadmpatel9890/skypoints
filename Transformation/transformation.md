@@ -4,16 +4,16 @@ Turns raw landing data into typed, cleaned and enriched tables in `SKYPOINTS_DEV
 
 ## Contents
 
-DDL (create) and DML (load) are kept in separate scripts.
+DDL (create) scripts live in `DDL/`; DML (load) scripts are at the folder root.
 
 | File | Type | Purpose |
 |---|---|---|
-| `Create_int_table.sql` | DDL | Creates `INT_MEMBERS` (typed member table) |
+| `DDL/Create_int_table.sql` | DDL | Creates `INT_MEMBERS` (typed member table) |
 | `Load_int_members.sql` | DML | Loads `LANDING_MEMBERS` → `INT_MEMBERS` (`INSERT OVERWRITE`) |
-| `Create_dervied_col_members.sql` | DDL | Creates `INT_MEMBERS_DERIVED` |
+| `DDL/Create_dervied_col_members.sql` | DDL | Creates `INT_MEMBERS_DERIVED` |
 | `load_derived_column_memebers.sql` | DML | Loads `INT_MEMBERS` → `INT_MEMBERS_DERIVED` with derived columns |
 | `latest_record_country_members.sql` | CTAS | Builds `COUNTRY_MEMBERS_LATEST` (latest record per member) |
-| `Create_flattening_redemption_landing.sql` | DDL | Creates `INT_FLAT_REDEMPTIONS` |
+| `DDL/Create_flattening_redemption_landing.sql` | DDL | Creates `INT_FLAT_REDEMPTIONS` |
 | `load_flattening_redemption.sql` | DML | Flattens `LANDING_REDEMPTIONS` JSON → `INT_FLAT_REDEMPTIONS` |
 
 ## Members flow
@@ -54,9 +54,9 @@ DDL (create) and DML (load) are kept in separate scripts.
 ## Run order
 
 **DDL (one-time setup)**
-1. `Create_int_table.sql`
-2. `Create_dervied_col_members.sql`
-3. `Create_flattening_redemption_landing.sql`
+1. `DDL/Create_int_table.sql`
+2. `DDL/Create_dervied_col_members.sql`
+3. `DDL/Create_flattening_redemption_landing.sql`
 
 **DML (each run)**
 1. `Load_int_members.sql`
