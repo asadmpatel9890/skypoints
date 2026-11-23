@@ -4,13 +4,17 @@ Turns raw landing data into typed, cleaned and enriched tables in `SKYPOINTS_DEV
 
 ## Contents
 
-| File | Purpose |
-|---|---|
-| `Create_int_table.sql` | Creates `INT_MEMBERS` (typed member table) |
-| `Load_int_members.sql` | Loads `LANDING_MEMBERS` → `INT_MEMBERS` (`INSERT OVERWRITE`) |
-| `dervied_col_members.sql` | Creates and loads `INT_MEMBERS_DERIVED` with derived columns |
-| `latest_record_country_members.sql` | Builds `COUNTRY_MEMBERS_LATEST` (latest file's record per member) |
-| `flattening_redemption_landing.sql` | Creates `INT_FLAT_REDEMPTIONS` and flattens the redemptions JSON into it |
+DDL (create) and DML (load) are kept in separate scripts.
+
+| File | Type | Purpose |
+|---|---|---|
+| `Create_int_table.sql` | DDL | Creates `INT_MEMBERS` (typed member table) |
+| `Load_int_members.sql` | DML | Loads `LANDING_MEMBERS` → `INT_MEMBERS` (`INSERT OVERWRITE`) |
+| `Create_dervied_col_members.sql` | DDL | Creates `INT_MEMBERS_DERIVED` |
+| `load_derived_column_memebers.sql` | DML | Loads `INT_MEMBERS` → `INT_MEMBERS_DERIVED` with derived columns |
+| `latest_record_country_members.sql` | CTAS | Builds `COUNTRY_MEMBERS_LATEST` (latest record per member) |
+| `Create_flattening_redemption_landing.sql` | DDL | Creates `INT_FLAT_REDEMPTIONS` |
+| `load_flattening_redemption.sql` | DML | Flattens `LANDING_REDEMPTIONS` JSON → `INT_FLAT_REDEMPTIONS` |
 
 ## Members flow
 
@@ -26,7 +30,9 @@ Turns raw landing data into typed, cleaned and enriched tables in `SKYPOINTS_DEV
 - `CURR_DATE` = the processing date
 
 **3. `COUNTRY_MEMBERS_LATEST`: latest record wins**
-- Keeps each member's row from the file with the latest `FILE_DATE` (`MAX(FILE_DATE) OVER (...)` + `QUALIFY`).
+- Partitioned by `MEM_ID`.
+- Step 1: keep the rows from each member's latest file (`MAX(FILE_DATE) OVER (PARTITION BY MEM_ID)` + `QUALIFY`).
+- Step 2: within those rows, keep the row with the latest `FLIGHT_DT` (`MAX(FLIGHT_DT) OVER (PARTITION BY MEM_ID)` + `QUALIFY`).
 
 **Lineage**
 
@@ -47,10 +53,15 @@ Turns raw landing data into typed, cleaned and enriched tables in `SKYPOINTS_DEV
 
 ## Run order
 
+**DDL (one-time setup)**
 1. `Create_int_table.sql`
-2. `Load_int_members.sql`
-3. `dervied_col_members.sql`
-4. `latest_record_country_members.sql`
-5. `flattening_redemption_landing.sql` (doesn't depend on steps 1–4)
+2. `Create_dervied_col_members.sql`
+3. `Create_flattening_redemption_landing.sql`
+
+**DML (each run)**
+1. `Load_int_members.sql`
+2. `load_derived_column_memebers.sql`
+3. `latest_record_country_members.sql`
+4. `load_flattening_redemption.sql` (doesn't depend on steps 1–3)
 
 Next step: `Final/` (one table per country from `COUNTRY_MEMBERS_LATEST`).
