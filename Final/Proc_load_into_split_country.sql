@@ -12,6 +12,7 @@ declare
  cc varchar;
  sch varchar default 'SKYPOINTS_DEV.FINAL_STAGE';
  stmt varchar;
+ stmt_um varchar;
  result varchar;
 begin
     for rec in c1 do
@@ -23,6 +24,8 @@ begin
         select 
         NAME, MEM_ID, ENROLL_DT, FLIGHT_DT, TIER, AGENT_NAME, STATE, COUNTRY, DOB, AGE, STALE_members, FLAG, CURR_DATE
         from SKYPOINTS_DEV.TRANSFORMATION_STAGE.COUNTRY_members_LATEST where country =?';
+
+        
         
         EXECUTE IMMEDIATE :stmt using (cc);
         
@@ -31,4 +34,6 @@ begin
     return retult;
 end;
 $$;
+----------
+
 
