@@ -1,0 +1,19 @@
+USE SCHEMA SKYPOINTS_DEV.TRANSFORMATION_STAGE;
+
+CREATE OR REPLACE  TABLE  INT_FLAT_REDEMPTIONS(
+    MEMBER_ID               VARCHAR(50) NOT NULL,
+    FEED_DATE               DATE,
+    TXN_ID                  VARCHAR(50) NOT NULL,
+    TXN_DATE                DATE,
+    PARTNER                 VARCHAR(50),
+    MILES_REDEEMED          NUMBER(18,0),
+    STATUS                  VARCHAR(50),    
+    SOURCE_FILE_NAME        VARCHAR(50),
+    SOURCE_FILE_ROW_NUMBER  NUMBER(38,0),
+    LOADED_AT               TIMESTAMP_NTZ
+);
+
+
+
+
+
