@@ -24,3 +24,6 @@ SELECT
     l.loaded_at
 ,FROM SKYPOINTS_DEV.LANDING_STAGE.LANDING_REDEMPTIONS l,
     LATERAL FLATTEN(INPUT => L.PAYLOAD:redemptions) r
+
+
+select * from int_flat_redemptions
