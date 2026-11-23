@@ -1,3 +1,5 @@
+USE SCHEMA SKYPOINTS_DEV.TRANSFORMATION_STAGE;
+
 insert into INT_MEMBERS_DERIVED 
 select
     name,
@@ -15,4 +17,7 @@ select
     CURRENT_DATE(),
     FILE_DATE
 from INT_MEMBERS;
+
+
+select * from INT_MEMBERS_DERIVED;
 

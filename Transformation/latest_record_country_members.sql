@@ -12,7 +12,7 @@ f as
 select *,                                           --- extracting latetst flight date records 
 max(flight_dt)
     over(partition by mem_id) as latest_flight_date 
-from SKYPOINTS_DEV.TRANSFORMATION_STAGE.INT_MEMBERS_DERIVED
+from s
 qualify latest_flight_date = flight_dt
 )
 select * from f
