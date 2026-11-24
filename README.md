@@ -36,11 +36,10 @@ Final/           country table template, country tables, country mapping
 
 - **Raw first, cast later.** One bad value never fails a load. It is caught by DQ.
 - **Lineage on every row.** File name and row number support auditing, reprocessing and the latest-record ordering.
-- **Idempotent.** Files that are already loaded or already audited are skipped.
 - **Metadata-driven split.** Adding a country is one row in `COUNTRY_TABLE_MAP`.
-- **Redemptions join to members** on `MEMBER_ID`. A LEFT JOIN surfaces redemptions whose member is missing.
+- **Redemptions join to members** on `MEMBER_ID`. A INNER JOIN surfaces redemptions whose member is missing.
 
 ## Scaling (billions of rows per day)
 
-Snowpipe loading of chunked files · Streams and Tasks for incremental runs · `QUALIFY ROW_NUMBER()` dedup per batch · clustering on `MEM_ID` and `FILE_DATE` · separate warehouses for ingestion and transformation.# skypoints
+Snowpipe loading of chunked files ·  `QUALIFY ROW_NUMBER()` dedup per batch · clustering on `MEM_ID` and `FILE_DATE` · separate warehouses for ingestion and transformation.# skypoints
 Project
